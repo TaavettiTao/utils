@@ -11,6 +11,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -22,6 +23,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
+import java.security.SignatureException;
+import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
@@ -36,6 +39,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+
+import org.apache.commons.codec.binary.Base64;
 
 /**
  * <p>
@@ -360,6 +365,7 @@ public class RSAUtil {
 		PublicKey pubKey = keyFactory.generatePublic(keySpec);
 		return pubKey;
 	}
+	
 
 	// ---------------------------------------------
 
@@ -810,11 +816,131 @@ public class RSAUtil {
 		// 验证签名是否正常
 		return signature.verify(sign);
 	}
+	
+	public static String getKeyString(Key key) {
+		// String s = (new BASE64Encoder()).encode(key.getEncoded());
+		String s = Base64Util.encode(key.getEncoded());
+		return s;
+	}
+	
+	
+	/**
+	 * RSA验签
+	 * 
+	 * @param txnInfo
+	 * @param sign
+	 * @param rsaModulus
+	 * @param publicKeyExponent
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 * @throws SignatureException
+	 * @throws InvalidKeyException
+	 */
+	public static boolean verify(String txnInfo, byte[] sign,
+			String rsaModulus, String publicKeyExponent)
+			throws UnsupportedEncodingException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InvalidKeyException, SignatureException {
+		int radix = 16;
+		BigInteger bigIntModulus = new BigInteger(rsaModulus, radix);
+		BigInteger bigIntPrivateExponent = new BigInteger(publicKeyExponent,
+				radix);
+		RSAPublicKeySpec keySpec = new RSAPublicKeySpec(bigIntModulus,
+				bigIntPrivateExponent);
+		KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+		PublicKey publicKey = keyFactory.generatePublic(keySpec);
+
+		byte[] data = txnInfo.getBytes("UTF-8");
+
+		return verify(data, sign, publicKey);
+	}
+	
+	/**
+	 * 用公钥进行验证签名
+	 * 
+	 * @param publicKey
+	 * @param content
+	 * @param signed
+	 * @return boolean
+	 * @throws NoSuchAlgorithmException
+	 * @throws SignatureException
+	 * @throws InvalidKeyException
+	 */
+	public static boolean verify(byte[] content, byte[] signed,
+			PublicKey publicKey) throws NoSuchAlgorithmException,
+			SignatureException, InvalidKeyException {
+		java.security.Signature signature = java.security.Signature
+				.getInstance(SIGNATURE_ALGORITHM);
+		signature.initVerify(publicKey);
+		signature.update(content);
+		// 验证签名是否正常
+		if (signature.verify(signed)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	
+	/**
+	 * RSA签名
+	 * 
+	 * @param reqData
+	 * @param rsaModulus
+	 * @param privateKeyExponent
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 * @throws SignatureException
+	 * @throws InvalidKeyException
+	 */
+	public static byte[] sign(String reqData, String rsaModulus,
+			String privateKeyExponent) throws UnsupportedEncodingException,
+			NoSuchAlgorithmException, InvalidKeySpecException,
+			InvalidKeyException, SignatureException {
+		int radix = 16;
+		BigInteger bigIntModulus = new BigInteger(rsaModulus, radix);
+		BigInteger bigIntPrivateExponent = new BigInteger(privateKeyExponent,
+				radix);
+		RSAPrivateKeySpec keySpec = new RSAPrivateKeySpec(bigIntModulus,
+				bigIntPrivateExponent);
+		KeyFactory keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
+		PrivateKey privateKey = keyFactory.generatePrivate(keySpec);
+
+		byte[] data = reqData.getBytes("UTF-8");
+		return sign(data, privateKey);
+	}
+
+	/**
+	 * 用私钥进行签名
+	 * 
+	 * @param content
+	 *            需签名数据
+	 * @param privateKey
+	 *            私钥
+	 * @return byte[]
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static byte[] sign(byte[] content, PrivateKey privateKey)
+			throws InvalidKeyException, SignatureException,
+			NoSuchAlgorithmException {
+		java.security.Signature signature = java.security.Signature
+				.getInstance(SIGNATURE_ALGORITHM);
+		signature.initSign(privateKey);
+		signature.update(content);
+		return signature.sign();
+	}
+
+
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("==========");
 
-		genKeyPair("d:\\key");
+		/*genKeyPair("d:\\key");
 
 		byte[] publicKey;
 		byte[] privateKey;
@@ -859,8 +985,21 @@ public class RSAUtil {
 		byte[] sign = RSAUtil.sign(privateKey, encodedData);
 		System.out.println("签名:\n" + sign);
 		boolean status = RSAUtil.verify(publicKey, encodedData, sign);
-		System.out.println("验证结果:\n" + status);
+		System.out.println("验证结果:\n" + status);*/		
+		
+		//========================== 获取base64编码公钥串====================
+		//base64公钥
+		String key="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx+yMLnBhVreFOITTNMosXs7tLVUvEqqvLJPaE+FhyouIUU5CZQnKGUV6zUhlUO9BAh22h2udExUgrKzvElrIcmUsIXyqXzTajOAnpBgikYY8J7tQretvk3Uj11Z0JaBz3pt6EXqcYxLQMu/cY0neX8BNYy1B81zrpjntsHbpBMhw1uI+BhjVQ9iXWxpL3bMeSW9H6R+/lztRvbGcnbVHrPKlkDxwwRBfmbAim5mrEovHS8hlwhynVPxWMZ8mlNU3TtWBe9AG7HQftFXeg1gKCv8Nd04EbFbm7NFv4OgPYDiM7pztH5vSuO+/sQZPkieb7xDK+aDrZZaeDIN8vU5ZBQIDAQAB"; 
+		System.out.println(Base64.isBase64(key));
+		  
+		//转换成RSAPublicKey
+		RSAPublicKey publicKey2=(RSAPublicKey)loadPublicKey(key);; //16进制模
+		System.out.println(publicKey2.getModulus().toString(16)); //16进制指数
+		System.out.println(publicKey2.getPublicExponent().toString(16));
+		// 获取base64编码公钥串
+		 System.out.println(getKeyString(publicKey2)); 
 
-		System.out.println();
+		
+		
 	}
 }
