@@ -20,7 +20,6 @@ public class ATRParseUtil {
 	public static void main(String[] args) {
 		/*System.out.println(parseATR(StringUtil
 				.hexStringToByteArray("3B9194803FC3A0BC65")));*/
-		
 		try {
 			int atrZero=Integer.valueOf("0000000000");
 		} catch (Exception e) {
