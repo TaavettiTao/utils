@@ -5,6 +5,7 @@
 package com.tww.utils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
 /**
@@ -584,6 +585,51 @@ public class BytesUtil {
 			if (bytes1[i] != bytes2[i])
 				return false;
 		return true;
+	}
+	
+	/**
+	 * 字节数组转换为ASCII字符串
+	 * @param bytes 字节数组
+	 * @param offset 初始为值
+	 * @param dateLen 数据长度
+	 * @return
+	 */
+	public static String bytesToAscii(byte[] bytes, int offset, int dateLen) {
+		if ((bytes == null) || (bytes.length == 0) || (offset < 0)
+				|| (dateLen <= 0)) {
+			return null;
+		}
+		if ((offset >= bytes.length) || (bytes.length - offset < dateLen)) {
+			return null;
+		}
+
+		String asciiStr = null;
+		byte[] data = new byte[dateLen];
+		System.arraycopy(bytes, offset, data, 0, dateLen);
+		try {
+			asciiStr = new String(data, "ISO8859-1");
+		} catch (UnsupportedEncodingException e) {
+		}
+		return asciiStr;
+	}
+
+	/**
+	 * 字节数组转换为ASCII字符串
+	 * @param bytes 字节数组
+	 * @param dateLen 转换长度
+	 * @return
+	 */
+	public static String bytesToAscii(byte[] bytes, int dateLen) {
+		return bytesToAscii(bytes, 0, dateLen);
+	}
+
+	/**
+	 * 字节数组转换为ASCII字符串
+	 * @param bytes 字节数组
+	 * @return
+	 */
+	public static String bytesToAscii(byte[] bytes) {
+		return bytesToAscii(bytes, 0, bytes.length);
 	}
 
 	public static void main(String[] args) throws IOException {
