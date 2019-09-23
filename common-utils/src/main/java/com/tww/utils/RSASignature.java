@@ -144,7 +144,6 @@ public class RSASignature {
 		logger.info("验签数据：{}",payload);
 		byte[] source = payload.getBytes(charset);
 		
-		// TODO 华为签名数据为Base64格式，此处需要解码
 		byte[] bytes=Base64Util.decode(signature);
 		logger.info("signnnnn:{}",StringUtil.byteArrayToHexString(bytes));
 		
@@ -264,7 +263,6 @@ public class RSASignature {
 				params).entrySet() /* 2. 按照参数名自然排序 */) {
 			String value = pair.getValue();
 			// 3. 忽略值为空的参数
-			//TODO 华为签名时，空字符串参与签名,后续看怎么调整
 			if (null == value /*|| value.length() == 0*/) {
 				continue;
 			}
