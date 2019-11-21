@@ -1,36 +1,55 @@
 /**
  * 
  */
-package com.tww.utils;
+package com.smart.monitor.utils;
 
-import java.util.ResourceBundle;
-/**
- * 
-* @ClassName: PropertyUtil 
-* @Description: TODO(这里用一句话描述这个类的作用) 
-* @author taoww
-* @date 2017年3月3日 下午4:18:09 
-*
- */
+import com.smart.modules.sys.util.ConvUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.util.Properties;
+
 public class PropertyUtil {
+	private static Properties properties = new Properties();
+
+	static {
+		try {
+			//读取classpath下资源文件
+			InputStream inputStream=PropertyUtil.class.getResourceAsStream("/application.properties");
+			properties.load(inputStream);
+			inputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * 获取指定问配置文件中key对应值
-	 * @param propertiesName
 	 *        properties配置文件名
 	 * @param key
 	 *        关键字
 	 * @return
 	 */
-	public static String getProperty(String propertiesName,String key) {
+	public static String getProperty(String key) {
 		String value = null;
 		try {
-			ResourceBundle rb = ResourceBundle.getBundle("");
-			value = rb.getString(key);
+			value = properties.getProperty(key);
 		} catch (Exception e) {
 			value = "";
 		}
 		return value;
 	}
+
+	public static BigDecimal getBigDecimalProperty(String key) {
+		BigDecimal value = null;
+		try {
+			value = ConvUtils.convToDecimal(properties.getProperty(key));
+		} catch (Exception e) {
+			value = BigDecimal.ZERO;
+		}
+		return value;
+	}
+
 
 }
