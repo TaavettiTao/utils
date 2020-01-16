@@ -1,9 +1,7 @@
 /**
  * 
  */
-package com.smart.monitor.utils;
-
-import com.smart.modules.sys.util.ConvUtils;
+package com.tww.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +48,7 @@ public class PropertyUtil {
 		}
 		return value;
 	}
+
 
 
 }
