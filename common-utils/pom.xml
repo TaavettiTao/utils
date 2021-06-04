@@ -13,7 +13,7 @@
 		<log4j.version>1.2.16</log4j.version>
 		<commons-lang.version>2.5</commons-lang.version>
 		<commons-codec.version>1.10</commons-codec.version>
-		<apache-httpclient.version>4.2.1</apache-httpclient.version>
+		<apache-httpclient.version>4.5.13</apache-httpclient.version>
 		<apache-httpmime.version>4.2.1</apache-httpmime.version>
 	</properties>
 	<dependencies>
